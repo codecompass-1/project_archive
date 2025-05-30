@@ -36,7 +36,10 @@ if (user.email !== adminOverrideEmail && !allowedEmailPattern.test(user.email)) 
     const userDocRef = doc(firestore, 'adminemail', user.email);
     const userDoc = await getDoc(userDocRef);
 
-    const isAdmin = userDoc.exists() && userDoc.data()?.role === 'admin';
+    const isAdmin =
+  userDoc.exists() &&
+  (userDoc.data()?.role === 'admin' || userDoc.data()?.role === 'superadmin');
+
 
     return { isAdmin };
   } catch (error) {
