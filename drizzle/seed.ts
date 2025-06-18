@@ -170,55 +170,6 @@ async function main() {
           { categoryName: 'Year of Submission', optionName: '2025' },
           { categoryName: 'Domain', optionName: 'App Development' }
         ]
-      },
-      {
-        projectName: 'sooraj',
-        projectDescription: 'ds,',
-        projectLink: 'https://github.com/Sooraj-krishna/GEC-HUB.git',
-        createdAt: new Date('2025-06-14T09:58:05.487Z'),
-        customDomain: null,
-        members: [
-          { name: 'aSD', linkedin: 'https://github.com/Sooraj-krishna/GEC-HUB.git' },
-          { name: 'Aget', linkedin: 'https://github.com/Sooraj-krishna/GEC-HUB.git' },
-        ],
-        categories: [
-          { categoryName: 'Project Type', optionName: 'Mini Project' },
-          { categoryName: 'Department', optionName: 'Other' },
-          { categoryName: 'Semester', optionName: 'S7' },
-          { categoryName: 'Year of Submission', optionName: '2025' }
-        ]
-      },
-      {
-        projectName: 'n v ',
-        projectDescription: ' jhm',
-        projectLink: 'https://github.com/Sooraj-krishna/GEC-HUB.git',
-        createdAt: new Date('2025-06-14T10:08:46.069Z'),
-        customDomain: null,
-        members: [
-          { name: 'nvb', linkedin: 'https://github.com/Sooraj-krishna/GEC-HUB.git' },
-        ],
-        categories: [
-          { categoryName: 'Project Type', optionName: 'Final Year Project' },
-          { categoryName: 'Department', optionName: 'CSE' },
-          { categoryName: 'Semester', optionName: 'S1' },
-          { categoryName: 'Year of Submission', optionName: '2025' }
-        ]
-      },
-      {
-        projectName: 'hvj',
-        projectDescription: 'yhj',
-        projectLink: 'https://github.com/Sooraj-krishna/GEC-HUB.git',
-        createdAt: new Date('2025-06-14T10:11:56.776Z'),
-        customDomain: null,
-        members: [
-          { name: 'hgfu', linkedin: 'https://github.com/Sooraj-krishna/GEC-HUB.git' },
-        ],
-        categories: [
-          { categoryName: 'Project Type', optionName: 'Mini Project' },
-          { categoryName: 'Department', optionName: 'CSE' },
-          { categoryName: 'Semester', optionName: 'S3' },
-          { categoryName: 'Year of Submission', optionName: '2025' }
-        ]
       }
     ];
 
