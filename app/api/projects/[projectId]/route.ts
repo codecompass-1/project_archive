@@ -1,9 +1,6 @@
-// File: app/api/projects/[projectId]/route.ts
-
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { eq } from "drizzle-orm";
-import { auth } from "@/lib/firebase/config"; // if you verify auth in API, else skip this
 import {
   projects,
   teamMembers,
@@ -14,27 +11,33 @@ import {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { projectId: string } }
+  context: { params: Promise<{ projectId: string }> }
 ) {
-  const projectId = Number(params.projectId);
-  if (isNaN(projectId)) {
-    return new Response(JSON.stringify({ error: "Invalid project ID" }), { status: 400 });
+  const { projectId } = await context.params;
+  const numericId = Number(projectId);
+
+  if (isNaN(numericId)) {
+    return new Response(JSON.stringify({ error: "Invalid project ID" }), {
+      status: 400,
+    });
   }
 
   try {
     const [projectData] = await db
       .select()
       .from(projects)
-      .where(eq(projects.projectId, projectId));
+      .where(eq(projects.projectId, numericId));
 
     if (!projectData) {
-      return new Response(JSON.stringify({ error: "Project not found" }), { status: 404 });
+      return new Response(JSON.stringify({ error: "Project not found" }), {
+        status: 404,
+      });
     }
 
     const members = await db
       .select({ name: teamMembers.name, linkedin: teamMembers.linkedin })
       .from(teamMembers)
-      .where(eq(teamMembers.projectId, projectId));
+      .where(eq(teamMembers.projectId, numericId));
 
     const categoryOptions = await db
       .select({
@@ -47,7 +50,7 @@ export async function GET(
         categoryOptionValues,
         eq(projectOptions.optionId, categoryOptionValues.optionId)
       )
-      .where(eq(projectOptions.projectId, projectId));
+      .where(eq(projectOptions.projectId, numericId));
 
     return new Response(
       JSON.stringify({
@@ -55,10 +58,15 @@ export async function GET(
         members,
         categories: categoryOptions,
       }),
-      { status: 200 }
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
     );
   } catch (err) {
     console.error("Error fetching project:", err);
-    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+    });
   }
 }

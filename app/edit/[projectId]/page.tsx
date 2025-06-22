@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Category, Project } from "@/types";
+import { Category, Project } from "@/types/project";
 import { auth } from "@/lib/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 import { ArrowLeft } from "lucide-react";

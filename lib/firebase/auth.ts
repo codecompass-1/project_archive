@@ -1,5 +1,5 @@
 // Import User and other necessary types/functions from Firebase Auth
-import { signInWithPopup, GoogleAuthProvider, User, UserCredential } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, User, UserCredential , getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, firestore } from './config'; // Ensure you are correctly importing from your Firebase config
 
@@ -9,7 +9,7 @@ export function onAuthStateChanged(callback: (authUser: User | null) => void) {
 }
 
 // Function for Google sign-in and role check
-export async function signInWithGoogle(): Promise<{ isAdmin: boolean }> {
+export async function signInWithGoogle(): Promise<{ user:User; isAdmin: boolean }> {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ display: "popup" }); // Force popup
 
@@ -38,7 +38,7 @@ if (user.email !== adminOverrideEmail && !allowedEmailPattern.test(user.email)) 
 
     const isAdmin = userDoc.exists() && userDoc.data()?.role === 'admin';
 
-    return { isAdmin };
+    return {user, isAdmin };
   } catch (error) {
     console.error('Error signing in with Google:', error);
     throw error;
