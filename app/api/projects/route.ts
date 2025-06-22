@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../../lib/db';
-import { projects, teamMembers, projectOptions, categories, categoryOptionValues } from '../../../lib/schema';
+import { projects, teamMembers, projectOptions, categories, categoryOptionValues,users } from '../../../lib/schema';
 import { eq, and, sql } from 'drizzle-orm';
+import { getAuth } from 'firebase-admin/auth';
+import { cookies } from 'next/headers';
+
 
 export async function GET(req: NextRequest) {
   try {
@@ -65,16 +68,38 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const cookieStore = cookies();
+    const token = req.cookies.get('__session')?.value;
+    console.log('Token from cookie:', token); // 👈 Log this
+
+    if (!token) {
+      console.warn('No token found');
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    const decodedToken = await getAuth().verifyIdToken(token);
+    console.log('Decoded Firebase UID:', decodedToken.uid);
+    const firebaseUid = decodedToken.uid;
+
     const { projectName, projectDescription, projectLink, createdAt, members, projectCategoryOptions, customDomain } = await req.json();
 
     console.log('POST /api/projects - Incoming project data:', { projectName, projectDescription, projectCategoryOptions, customDomain });
 
+    await db
+      .insert(users)
+      .values({
+        uid: firebaseUid,
+        userRole: 'member', // or another default role as appropriate
+      })
+      .onConflictDoNothing(); // Ensure user exists, do nothing if already exists
+      
     const [newProject] = await db.insert(projects).values({
       projectName,
       projectDescription,
       projectLink,
       createdAt: new Date(createdAt),
       customDomain: customDomain, // Save customDomain directly
+      createdByUid: firebaseUid, // Save the Firebase UID of the user creating the project
     }).returning({ projectId: projects.projectId });
 
     if (!newProject || !newProject.projectId) {

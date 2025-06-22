@@ -9,16 +9,20 @@ import TabSection from '@/components/repeto/TabSection';
 import AddProjectFAB from '@/components/repeto/AddProjectFAB';
 // import LoadingScreen from "@/components/loadingScrenn";
 import Link from 'next/link';
+import LoadingScreen from '@/components/loadingScrenn'; // Import the loading screen component
 
   
 export default function Home() {
   const [activeTab, setActiveTab] = useState("All");
+  const [loading, setLoading] = useState(true); // Track loading state
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [refreshTrigger, setRefreshTrigger] = useState(false); // State to trigger project re-fetch
   // const [loading, setLoading] = useState(true); // Track loading state
 
   useEffect(() => {
     // Simulate a loading delay
+    const timer = setTimeout(() => setLoading(false), 3000);
+     return () => clearTimeout(timer);
     // const timer = setTimeout(() => setLoading(false), 1500);
     // return () => clearTimeout(timer);
     setRefreshTrigger(prev => !prev); // Trigger re-fetch when component mounts
@@ -31,10 +35,10 @@ export default function Home() {
     setFilters({});
   };
 
-  // Show the loading screen first
-  // if (loading) {
-  //   return <LoadingScreen />;
-  // }
+  
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <main className="min-h-screen bg-gray-50">

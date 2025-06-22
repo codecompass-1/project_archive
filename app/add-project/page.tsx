@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Save, XCircle } from "lucide-react";
 import Link from "next/link";
+import { auth } from "@/lib/firebase/config"; // Import auth
 
-interface CategoryOption { // Define interfaces for fetched data
+interface CategoryOption {
   optionId: number;
   optionName: string;
 }
@@ -23,19 +24,18 @@ const AddProjectPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch('/api/categories');
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
+        const res = await fetch("/api/categories");
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data: Category[] = await res.json();
         setCategories(data);
       } catch (e: any) {
         setErrorCategories(e.message);
-        console.error("Failed to fetch categories for form:", e);
+        console.error("Failed to fetch categories:", e);
       } finally {
         setLoadingCategories(false);
       }
     };
+
     fetchCategories();
   }, []);
 
@@ -45,8 +45,8 @@ const AddProjectPage = () => {
     projectLink: "",
     createdAt: "",
     members: [{ name: "", linkedin: "" }],
-    selectedCategoryOptions: {} as Record<string, string>, // Map category name to selected option name
-    customDomain: "", // Keep customDomain separate if 'Domain' is 'Other'
+    selectedCategoryOptions: {} as Record<string, string>,
+    customDomain: "",
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -54,26 +54,22 @@ const AddProjectPage = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Set initial default values for dropdowns after categories are fetched
     if (!loadingCategories && categories.length > 0) {
-      setFormData(prev => {
+      setFormData((prev) => {
         const newSelectedOptions: Record<string, string> = {};
-        categories.forEach(cat => {
+        categories.forEach((cat) => {
           if (cat.options.length > 0) {
             newSelectedOptions[cat.categoryName] = cat.options[0].optionName;
           }
         });
-        return {
-          ...prev,
-          selectedCategoryOptions: newSelectedOptions,
-        };
+        return { ...prev, selectedCategoryOptions: newSelectedOptions };
       });
     }
   }, [loadingCategories, categories]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loading) return; 
+    if (loading) return;
 
     const hasValidMember = formData.members.some(
       (member) => member.name.trim() !== ""
@@ -89,10 +85,14 @@ const AddProjectPage = () => {
       (member) => member.name.trim() !== ""
     );
 
-    // Prepare category options for backend
-    const projectCategoryOptions: { categoryName: string; optionName: string }[] = Object.entries(formData.selectedCategoryOptions).map(([categoryName, optionName]) => ({
+    const projectCategoryOptions :{categoryName: string; optionName:string}[]= Object.entries(
+      formData.selectedCategoryOptions
+    ).map(([categoryName, optionName]) => ({
       categoryName,
-      optionName: categoryName === 'Domain' && optionName === 'Other' ? formData.customDomain : optionName // Use customDomain if 'Other' domain is selected
+      optionName:
+        categoryName === "Domain" && optionName === "Other"
+          ? formData.customDomain
+          : optionName,
     }));
 
     const projectData = {
@@ -101,20 +101,35 @@ const AddProjectPage = () => {
       projectLink: formData.projectLink,
       createdAt: new Date().toISOString(),
       members: filteredMembers,
-      projectCategoryOptions, // Send as a generic array of category options
-      customDomain: formData.selectedCategoryOptions['Domain'] === 'Other' ? formData.customDomain : undefined, // Send customDomain separately
+      projectCategoryOptions,
+      customDomain:
+        formData.selectedCategoryOptions["Domain"] === "Other"
+          ? formData.customDomain
+          : undefined,
     };
 
     try {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("You must be logged in to submit a project.");
+        setLoading(false);
+        return;
+      }
+
+      const idToken = await user.getIdToken();
+      document.cookie = `__session=${idToken}; path=/;`;
+
       const response = await fetch("/api/projects", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(projectData)
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(projectData),
       });
 
       if (response.ok) {
-        localStorage.removeItem('cachedProjects'); // Invalidate projects cache
-        setFormData(initialFormState); // Reset form
+        localStorage.removeItem("cachedProjects");
+        setFormData(initialFormState);
         setShowPopup(true);
         setTimeout(() => setShowPopup(false), 3000);
       } else {
@@ -156,7 +171,7 @@ const AddProjectPage = () => {
   const addMember = () => {
     setFormData({
       ...formData,
-      members: [...formData.members, { name: "", linkedin: "" }]
+      members: [...formData.members, { name: "", linkedin: "" }],
     });
   };
 
@@ -174,7 +189,11 @@ const AddProjectPage = () => {
   }
 
   if (errorCategories) {
-    return <div className="text-center py-8 text-red-500">Error loading form data: {errorCategories}</div>;
+    return (
+      <div className="text-center py-8 text-red-500">
+        Error loading form data: {errorCategories}
+      </div>
+    );
   }
 
   return (
@@ -188,24 +207,9 @@ const AddProjectPage = () => {
         </div>
       </div>
 
-      {/* Pop-up Message */}
       {showPopup && (
-        <div
-          style={{
-            position: "fixed",
-            top: "20%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            backgroundColor: "#4CAF50",
-            color: "white",
-            padding: "20px",
-            borderRadius: "10px",
-            fontSize: "20px",
-            fontWeight: "bold",
-            animation: "popIn 0.6s ease-in-out"
-          }}
-        >
-          🎉 Congratulations! Your project was saved successfully! 🎉
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50">
+          🎉 Congratulations! Your project was saved successfully!
         </div>
       )}
 
@@ -232,20 +236,21 @@ const AddProjectPage = () => {
             onChange={handleChange}
             value={formData.projectDescription}
           />
-          
-          {/* Dynamic Category Selects */}
-          {categories.length > 0 && categories.map(category => (
+
+          {categories.length>0 && categories.map((category) => (
             <div key={category.categoryId} className="mb-4">
-              <label htmlFor={`category-${category.categoryName}`} className="block text-sm font-medium text-gray-700">
+              <label className="block mb-1 text-sm font-medium">
                 {category.categoryName}
               </label>
               <select
-                id={`category-${category.categoryName}`}
+              id={`category-${category.categoryName}`}
                 name={`category-${category.categoryName}`}
                 required
                 className="w-full px-4 py-2 border rounded-lg"
                 onChange={handleChange}
-                value={formData.selectedCategoryOptions[category.categoryName] || ''}
+                value={
+                  formData.selectedCategoryOptions[category.categoryName] || ""
+                }
               >
                 {category.options.map((option) => (
                   <option key={option.optionId} value={option.optionName}>
@@ -253,16 +258,17 @@ const AddProjectPage = () => {
                   </option>
                 ))}
               </select>
-              {category.categoryName === "Domain" && formData.selectedCategoryOptions["Domain"] === "Other" && (
-                <input
-                  type="text"
-                  name="customDomain"
-                  className="mt-2 w-full px-4 py-2 border rounded-lg"
-                  placeholder="Enter custom domain"
-                  onChange={handleChange}
-                  value={formData.customDomain}
-                />
-              )}
+              {category.categoryName === "Domain" &&
+                formData.selectedCategoryOptions["Domain"] === "Other" && (
+                  <input
+                    type="text"
+                    name="customDomain"
+                    className="mt-2 w-full px-4 py-2 border rounded-lg"
+                    placeholder="Enter custom domain"
+                    onChange={handleChange}
+                    value={formData.customDomain}
+                  />
+                )}
             </div>
           ))}
 
@@ -271,12 +277,11 @@ const AddProjectPage = () => {
             name="projectLink"
             required
             className="w-full px-4 py-2 border rounded-lg"
-            placeholder="Github link or google drive link of project contents"
+            placeholder="Project Link (e.g. GitHub)"
             onChange={handleChange}
             value={formData.projectLink}
           />
 
-          {/* Members Section */}
           {formData.members.map((member, index) => (
             <div key={index} className="flex items-center gap-2">
               <input

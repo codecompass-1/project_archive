@@ -1,0 +1,105 @@
+.rect-i{
+    display: inline-block;    
+    height: 1em;
+    background: transparent;    
+    vertical-align: baseline;
+    position: relative;
+}
+
+
+
+.dot-2{      
+    position: fixed;
+    width: 0.16em;
+    height: 0.16em;
+    top: 50%; /* adjust as needed */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    background: linear-gradient(to right, #5f7fff, #3ebe46);
+    border-radius: 50%;
+    transition:all 0.3s ease-in;
+   
+}
+.bounce{
+    animation: bounce 1.5s ease-in infinite;
+    opacity: 1;
+}
+/* The jump animation */
+.dot-i {
+  position: absolute;
+  width: 0.16em;
+  height: 0.16em;
+  background: linear-gradient(to right, #5f7fff, #3ebe46);
+  border-radius: 50%;
+  top: 0.23em;
+  left: -0.15em;
+  transform: translateX(-50%);
+  animation: jumpToCenter 1.5s ease-out forwards;
+  animation-delay: 0.5s;
+  z-index: 10;
+}
+
+@keyframes jumpToCenter {
+  0% {
+    top: 0.23em;
+    left: -0.15em;
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    top: -80px;
+    left: 50%;
+    transform: translateX(-50%) scale(1);
+    opacity: 0;
+  }
+
+   66% {
+    top: -120px;
+    left: 50%;
+    transform: translateX(-50%) scale(1);
+  }
+
+
+
+  100% {
+    top: 300px;
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    opacity: 0;
+  }
+}
+
+
+@keyframes bounce {
+  0% {
+    width: 0.16em;
+    height: 0.16em;
+    transform: translateY(0);
+  }
+  50% {
+    width: 0.16em;
+    height: 0.16em;
+    transform: translateY(-20px);
+  }
+  100% {
+    width: 0.16em;
+    height: 0.16em;
+    transform: translateY(0);
+  }
+    
+}
+
+
+.move-left{
+    transform: translateX(-500px);
+    transition: all 1.5s ease-in;   
+    
+}
+
+.move-right{
+    transform: translateX(500px);
+    transition: all 1.5s ease-in;
+    
+}
